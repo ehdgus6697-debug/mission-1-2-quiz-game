@@ -50,10 +50,32 @@ class QuizGame:
             data = json.loads(self.state_path.read_text(encoding="utf-8"))
             if not isinstance(data, dict) or not isinstance(data["quizzes"], list):
                 raise ValueError("상태 데이터 형식이 올바르지 않습니다.")
-            self.quizzes = [quiz_from_dict(item) for item in data["quizzes"]]
-            self.best_score = data.get("best_score")
-            self.best_correct = data.get("best_correct")
-            self.best_total = data.get("best_total")
+
+            self.quizzes = []
+
+            for item in data["quizzes"]:
+                quiz = quiz_from_dict(item)
+                self.quizzes.append(quiz)
+
+            best_score = data.get("best_score")
+            best_correct = data.get("best_correct")
+            best_total = data.get("best_total")
+            score_values = (best_score, best_correct, best_total)
+
+            if any(value is not None for value in score_values):
+                if not all(type(value) is int for value in score_values):
+                    raise ValueError("최고 점수 데이터 형식이 올바르지 않습니다.")
+                if (
+                    best_total <= 0
+                    or not 0 <= best_correct <= best_total
+                    or not 0 <= best_score <= 100
+                    or best_score != round(best_correct / best_total * 100)
+                ):
+                    raise ValueError("최고 점수 데이터 값이 올바르지 않습니다.")
+
+            self.best_score = best_score
+            self.best_correct = best_correct
+            self.best_total = best_total
         except (json.JSONDecodeError, OSError, KeyError, TypeError, ValueError):
             print("⚠️ 상태 파일을 읽을 수 없어 기본 데이터로 복구합니다.")
             self._set_defaults()

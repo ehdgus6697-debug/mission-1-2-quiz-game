@@ -1,3 +1,4 @@
+import json
 import unittest
 from contextlib import redirect_stdout
 from io import StringIO
@@ -60,6 +61,87 @@ class PersistenceTests(unittest.TestCase):
             self.assertIsNone(game.best_score)
             reloaded = QuizGame(state_path)
             self.assertEqual(len(reloaded.quizzes), 5)
+
+    def test_invalid_state_schema_recovers_defaults(self):
+        invalid_states = {
+            "numeric question": {
+                "quizzes": [
+                    {
+                        "question": 123,
+                        "choices": ["1", "2", "3", "4"],
+                        "answer": 1,
+                    }
+                ],
+                "best_score": None,
+                "best_correct": None,
+                "best_total": None,
+            },
+            "string choices": {
+                "quizzes": [
+                    {
+                        "question": "문제",
+                        "choices": "1234",
+                        "answer": 1,
+                    }
+                ],
+                "best_score": None,
+                "best_correct": None,
+                "best_total": None,
+            },
+            "numeric choice": {
+                "quizzes": [
+                    {
+                        "question": "문제",
+                        "choices": [1, "2", "3", "4"],
+                        "answer": 1,
+                    }
+                ],
+                "best_score": None,
+                "best_correct": None,
+                "best_total": None,
+            },
+            "boolean answer": {
+                "quizzes": [
+                    {
+                        "question": "문제",
+                        "choices": ["1", "2", "3", "4"],
+                        "answer": True,
+                    }
+                ],
+                "best_score": None,
+                "best_correct": None,
+                "best_total": None,
+            },
+            "invalid score": {
+                "quizzes": [],
+                "best_score": -1,
+                "best_correct": -1,
+                "best_total": 0,
+            },
+            "boolean score": {
+                "quizzes": [],
+                "best_score": False,
+                "best_correct": 0,
+                "best_total": 1,
+            },
+        }
+
+        for name, state in invalid_states.items():
+            with self.subTest(name=name):
+                with TemporaryDirectory() as directory:
+                    state_path = Path(directory) / "state.json"
+                    state_path.write_text(
+                        json.dumps(state, ensure_ascii=False),
+                        encoding="utf-8",
+                    )
+                    output = StringIO()
+
+                    with redirect_stdout(output):
+                        game = QuizGame(state_path)
+
+                    self.assertEqual(len(game.quizzes), 5)
+                    self.assertIsNone(game.best_score)
+                    self.assertIn("기본 데이터로 복구", output.getvalue())
 
 
 class InputTests(unittest.TestCase):

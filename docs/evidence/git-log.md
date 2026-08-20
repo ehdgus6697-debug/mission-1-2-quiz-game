@@ -1,6 +1,8 @@
 # 커밋 수 및 병합 기록
 
-검증일: 2026-08-20
+검증일: 2026-08-21
+
+아래 내용은 증거 문서 갱신 직전 `main`의 스냅샷이다. 이후 커밋을 포함한 최신 기록은 각 확인 명령을 직접 실행해 확인한다.
 
 ## 커밋 수
 
@@ -9,11 +11,11 @@ $ git rev-list --count main
 31
 ```
 
-## 병합 기록 포함 전체 로그
+## 병합 기록 포함 로그 스냅샷
 
 ```bash
 $ git log --oneline --graph --all
-* 2e93155 Refactor: Quiz와 QuizGame 클래스를 quiz.py, quiz_game.py 두 파일로 분리
+* b7e0d89 Refactor: Quiz와 QuizGame 클래스를 quiz.py, quiz_game.py 두 파일로 분리
 * 4f49b6e Style: classmethod와 던더 메서드를 일반 함수로 단순화
 * da5284a Docs: 평가 피드백 반영 (커밋/병합 증거, JSON 선정 이유, 확장성·백업 전략 보완)
 * c6c78e7 Style: 타입 힌트 제거, 순수 Python 기초 문법으로 정리

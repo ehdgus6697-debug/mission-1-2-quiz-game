@@ -5,13 +5,20 @@ class Quiz:
     """선택지가 네 개인 객관식 퀴즈 한 문제."""
 
     def __init__(self, question, choices, answer):
+        if not isinstance(question, str):
+            raise ValueError("문제는 문자열이어야 합니다.")
+        if not isinstance(choices, list) or any(
+            not isinstance(choice, str) for choice in choices
+        ):
+            raise ValueError("선택지는 문자열이 들어 있는 리스트여야 합니다.")
+
         question = question.strip()
-        choices = [str(choice).strip() for choice in choices]
+        choices = [choice.strip() for choice in choices]
         if not question:
             raise ValueError("문제는 비어 있을 수 없습니다.")
         if len(choices) != 4 or any(not choice for choice in choices):
             raise ValueError("선택지는 비어 있지 않은 4개여야 합니다.")
-        if not isinstance(answer, int) or not 1 <= answer <= 4:
+        if type(answer) is not int or not 1 <= answer <= 4:
             raise ValueError("정답은 1부터 4 사이의 정수여야 합니다.")
 
         self.question = question
@@ -38,7 +45,7 @@ class Quiz:
 def quiz_from_dict(data):
     """딕셔너리(state.json에서 읽은 데이터)를 Quiz 객체로 만든다."""
     if not isinstance(data, dict):
-        raise ValueError("퀴즈 데이터는 객체여야 합니다.")
+        raise ValueError("퀴즈 데이터는 딕셔너리 형식이어야 합니다.")
     try:
         return Quiz(data["question"], data["choices"], data["answer"])
     except (KeyError, TypeError) as error:
