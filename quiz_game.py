@@ -1,6 +1,8 @@
 """Python 기초 퀴즈 게임."""
 
+import json
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass
@@ -70,3 +72,50 @@ def create_default_quizzes() -> list[Quiz]:
             1,
         ),
     ]
+
+
+class QuizGame:
+    """퀴즈 목록, 점수, 메뉴와 저장 흐름을 관리한다."""
+
+    def __init__(self, state_path: str | Path = "state.json") -> None:
+        self.state_path = Path(state_path)
+        self.quizzes: list[Quiz] = []
+        self.best_score: int | None = None
+        self.best_correct: int | None = None
+        self.best_total: int | None = None
+        self.load_state()
+
+    def _set_defaults(self) -> None:
+        self.quizzes = create_default_quizzes()
+        self.best_score = None
+        self.best_correct = None
+        self.best_total = None
+
+    def save_state(self) -> bool:
+        data = {
+            "quizzes": [quiz.to_dict() for quiz in self.quizzes],
+            "best_score": self.best_score,
+            "best_correct": self.best_correct,
+            "best_total": self.best_total,
+        }
+        try:
+            self.state_path.write_text(
+                json.dumps(data, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+        except OSError:
+            print("⚠️ 상태 파일을 저장하지 못했습니다.")
+            return False
+        return True
+
+    def load_state(self) -> None:
+        if not self.state_path.exists():
+            self._set_defaults()
+            self.save_state()
+            return
+
+        data = json.loads(self.state_path.read_text(encoding="utf-8"))
+        self.quizzes = [Quiz.from_dict(item) for item in data["quizzes"]]
+        self.best_score = data.get("best_score")
+        self.best_correct = data.get("best_correct")
+        self.best_total = data.get("best_total")

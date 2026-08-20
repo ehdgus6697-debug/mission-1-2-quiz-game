@@ -1,6 +1,8 @@
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
-from quiz_game import Quiz, create_default_quizzes
+from quiz_game import Quiz, QuizGame, create_default_quizzes
 
 
 class QuizTests(unittest.TestCase):
@@ -23,6 +25,24 @@ class DefaultQuizTests(unittest.TestCase):
         self.assertGreaterEqual(len(quizzes), 5)
         self.assertTrue(all(len(quiz.choices) == 4 for quiz in quizzes))
         self.assertTrue(all(1 <= quiz.answer <= 4 for quiz in quizzes))
+
+
+class PersistenceTests(unittest.TestCase):
+    def test_save_and_reload(self):
+        with TemporaryDirectory() as directory:
+            state_path = Path(directory) / "state.json"
+            game = QuizGame(state_path)
+            game.best_score = 80
+            game.best_correct = 4
+            game.best_total = 5
+
+            self.assertTrue(game.save_state())
+            loaded = QuizGame(state_path)
+
+            self.assertEqual(len(loaded.quizzes), 5)
+            self.assertEqual(loaded.best_score, 80)
+            self.assertEqual(loaded.best_correct, 4)
+            self.assertEqual(loaded.best_total, 5)
 
 
 if __name__ == "__main__":
