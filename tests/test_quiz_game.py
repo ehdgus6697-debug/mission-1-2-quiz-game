@@ -1,6 +1,9 @@
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from quiz_game import Quiz, QuizGame, create_default_quizzes
 
@@ -55,6 +58,31 @@ class PersistenceTests(unittest.TestCase):
             self.assertIsNone(game.best_score)
             reloaded = QuizGame(state_path)
             self.assertEqual(len(reloaded.quizzes), 5)
+
+
+class InputTests(unittest.TestCase):
+    def test_read_number_retries_invalid_values(self):
+        with TemporaryDirectory() as directory:
+            game = QuizGame(Path(directory) / "state.json")
+            output = StringIO()
+            with patch("builtins.input", side_effect=["", "abc", "9", " 2 "]):
+                with redirect_stdout(output):
+                    result = game.read_number("선택: ", 1, 5)
+
+            self.assertEqual(result, 2)
+            self.assertEqual(output.getvalue().count("⚠️"), 3)
+
+    def test_show_menu_contains_only_required_choices(self):
+        with TemporaryDirectory() as directory:
+            game = QuizGame(Path(directory) / "state.json")
+            output = StringIO()
+            with redirect_stdout(output):
+                game.show_menu()
+
+            text = output.getvalue()
+            self.assertIn("1. 퀴즈 풀기", text)
+            self.assertIn("5. 종료", text)
+            self.assertNotIn("힌트", text)
 
 
 if __name__ == "__main__":

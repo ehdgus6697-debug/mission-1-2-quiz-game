@@ -126,3 +126,30 @@ class QuizGame:
             print("⚠️ 상태 파일을 읽을 수 없어 기본 데이터로 복구합니다.")
             self._set_defaults()
             self.save_state()
+
+    def read_number(self, prompt: str, minimum: int, maximum: int) -> int:
+        while True:
+            raw_value = input(prompt).strip()
+            if not raw_value:
+                print("⚠️ 값을 입력해 주세요.")
+                continue
+            try:
+                value = int(raw_value)
+            except ValueError:
+                print("⚠️ 숫자를 입력해 주세요.")
+                continue
+            if not minimum <= value <= maximum:
+                print(f"⚠️ {minimum}부터 {maximum} 사이의 숫자를 입력해 주세요.")
+                continue
+            return value
+
+    def show_menu(self) -> None:
+        print("\n" + "=" * 40)
+        print("        🎯 Python 기초 퀴즈 게임 🎯")
+        print("=" * 40)
+        print("1. 퀴즈 풀기")
+        print("2. 퀴즈 추가")
+        print("3. 퀴즈 목록")
+        print("4. 점수 확인")
+        print("5. 종료")
+        print("=" * 40)
