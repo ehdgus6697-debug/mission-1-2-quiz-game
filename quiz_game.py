@@ -26,6 +26,12 @@ class Quiz:
     def is_correct(self, choice: int) -> bool:
         return choice == self.answer
 
+    def display(self, index: int) -> None:
+        print("\n" + "-" * 40)
+        print(f"[문제 {index}] {self.question}")
+        for choice_number, choice in enumerate(self.choices, start=1):
+            print(f"{choice_number}. {choice}")
+
     def to_dict(self) -> dict:
         return {
             "question": self.question,
@@ -163,3 +169,28 @@ class QuizGame:
         self.best_total = total
         self.save_state()
         return True
+
+    def play_quizzes(self) -> None:
+        if not self.quizzes:
+            print("📭 등록된 퀴즈가 없습니다.")
+            return
+
+        print(f"\n📝 퀴즈를 시작합니다! (총 {len(self.quizzes)}문제)")
+        correct_count = 0
+        for index, quiz in enumerate(self.quizzes, start=1):
+            quiz.display(index)
+            choice = self.read_number("정답 입력: ", 1, 4)
+            if quiz.is_correct(choice):
+                correct_count += 1
+                print("✅ 정답입니다!")
+            else:
+                print(f"❌ 오답입니다. 정답은 {quiz.answer}번입니다.")
+
+        total = len(self.quizzes)
+        score = round(correct_count / total * 100)
+        is_new_best = self.update_best_score(correct_count, total)
+        print("\n" + "=" * 40)
+        print(f"🏆 결과: {total}문제 중 {correct_count}문제 정답! ({score}점)")
+        if is_new_best:
+            print("🎉 새로운 최고 점수입니다!")
+        print("=" * 40)

@@ -98,5 +98,35 @@ class ScoreTests(unittest.TestCase):
             self.assertEqual((game.best_score, game.best_correct, game.best_total), (80, 4, 5))
 
 
+class PlayTests(unittest.TestCase):
+    def test_play_reports_answers_and_result(self):
+        with TemporaryDirectory() as directory:
+            game = QuizGame(Path(directory) / "state.json")
+            game.quizzes = [
+                Quiz("첫 문제", ["정답", "오답", "오답", "오답"], 1),
+                Quiz("둘째 문제", ["정답", "오답", "오답", "오답"], 1),
+            ]
+            output = StringIO()
+            with patch("builtins.input", side_effect=["1", "2"]):
+                with redirect_stdout(output):
+                    game.play_quizzes()
+
+            text = output.getvalue()
+            self.assertIn("✅ 정답입니다!", text)
+            self.assertIn("❌ 오답입니다.", text)
+            self.assertIn("2문제 중 1문제 정답", text)
+            self.assertIn("50점", text)
+
+    def test_play_handles_empty_quiz_list(self):
+        with TemporaryDirectory() as directory:
+            game = QuizGame(Path(directory) / "state.json")
+            game.quizzes = []
+            output = StringIO()
+            with redirect_stdout(output):
+                game.play_quizzes()
+
+            self.assertIn("등록된 퀴즈가 없습니다", output.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()
