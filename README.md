@@ -62,12 +62,12 @@ mission-1-2-quiz-game/
 }
 ```
 
-- `quizzes`: 퀴즈 객체 목록
+- `quizzes`: 퀴즈 객체 목록. 문제 수가 늘어날 수 있어 배열로 두었습니다.
+- `choices`: 선택지 순서와 정답 번호가 그대로 이어지도록 배열로 저장합니다.
 - `best_score`: 100점 기준 최고 점수
-- `best_correct`: 최고 점수를 기록했을 때 맞힌 문제 수
-- `best_total`: 최고 점수를 기록했을 때 전체 문제 수
+- `best_correct` / `best_total`: 최고 점수를 기록했을 때의 정답 수와 전체 문제 수. 점수만 저장하면 "80점"이 몇 문제 중 몇 문제인지 알 수 없어 두 값을 함께 둡니다.
 
-아직 퀴즈를 풀지 않은 경우 점수 관련 값은 `null`입니다.
+아직 퀴즈를 풀지 않은 경우 점수 관련 값은 `null`입니다. 0점과 "아직 안 풀었음"을 구분하기 위한 값입니다.
 
 ## 테스트
 
@@ -79,19 +79,80 @@ python3 -m py_compile quiz_game.py
 python3 -m json.tool state.json
 ```
 
-## 클래스 설명
+## 설계와 구현 노트
 
-- `Quiz`: 문제, 선택지, 정답을 보관하고 문제 출력과 정답 판정을 담당합니다.
-- `QuizGame`: 메뉴, 입력 검증, 게임 진행, 퀴즈 추가·목록, 점수, JSON 저장·불러오기를 관리합니다.
+### 클래스로 나눈 이유
 
-`__init__`은 객체가 만들어질 때 필요한 속성을 준비합니다. `self`는 지금 사용 중인 객체 자신을 가리킵니다. 기능을 메서드로 나누었기 때문에 각 부분을 따로 읽고 테스트할 수 있습니다.
+`Quiz`는 문제 하나의 데이터(`question`, `choices`, `answer`)와 판정 동작(`display`, `is_correct`, `to_dict`, `from_dict`)을 담당합니다. `QuizGame`은 여러 퀴즈와 최고 점수를 관리하며 메뉴, 입력 검증, 게임 진행, 퀴즈 추가·목록, 파일 저장·불러오기를 담당합니다.
 
-## Git 확인
+함수만으로도 구현할 수 있지만 그러면 퀴즈 목록과 최고 점수를 여러 함수에 계속 인자로 넘겨야 합니다. 클래스로 묶으면 객체가 자기 상태를 직접 들고 있어서 메서드 사이 데이터 전달이 단순해지고, 문제 하나의 규칙(`Quiz`)과 프로그램 전체 흐름(`QuizGame`)이라는 두 책임이 분명하게 나뉩니다.
 
-커밋과 브랜치 병합 기록은 다음 명령으로 확인합니다.
+### 메서드 구성
+
+```text
+입력 검증       read_number, read_non_empty
+화면/게임 진행  show_menu, play_quizzes, add_quiz, list_quizzes, show_best_score
+점수            update_best_score
+데이터 저장     save_state, load_state, _set_defaults
+전체 제어       run
+```
+
+각 메서드의 입력과 결과가 분명해서 한 기능을 고치거나 테스트할 때 다른 흐름을 모두 읽지 않아도 됩니다.
+
+### `state.json` 저장·복원 흐름
+
+```text
+시작할 때
+main → QuizGame 생성 → __init__ → load_state
+     ├─ 파일 없음        → _set_defaults → save_state
+     ├─ 정상 파일        → json.loads → Quiz.from_dict → 객체 목록 복원
+     └─ 손상/읽기 실패    → 예외 처리  → _set_defaults → save_state
+
+실행 중 / 종료할 때
+퀴즈 추가 또는 최고 점수 갱신  → save_state
+정상 종료 / Ctrl+C / EOF     → run()의 finally → save_state
+```
+
+`run()`은 `KeyboardInterrupt`와 `EOFError`를 잡아 안내를 출력하고, 정상 종료인지 예외 종료인지와 관계없이 `finally`에서 저장합니다. 이 처리가 없으면 입력이 갑자기 끊겼을 때 방금 추가한 퀴즈나 점수 변경이 저장되지 않을 수 있습니다.
+
+### 예외 처리
+
+파일이 손상돼 JSON 문법이 틀리면 `JSONDecodeError`, 키나 구조가 잘못되면 `KeyError`/`TypeError`/`ValueError`, 권한이나 디스크 문제로 읽고 쓰지 못하면 `OSError`가 날 수 있습니다. 예외를 잡지 않으면 프로그램이 그대로 죽기 때문에, 읽기 실패 시에는 기본 퀴즈로 복구하고 쓰기 실패 시에는 안내 후 `False`를 반환하도록 했습니다.
+
+### 브랜치 전략과 커밋 규칙
+
+기능을 독립적으로 만들고 검증한 뒤 `main`에 합치기 위해 브랜치를 나눠 작업했습니다. 실제 병합 기록은 아래 명령으로 확인할 수 있습니다.
 
 ```bash
 git log --oneline --graph --all
 ```
 
-원격 저장소 복제와 pull 실습은 GitHub 저장소를 만든 뒤 별도 디렉터리에서 진행합니다.
+커밋 접두어는 다음 기준으로 사용했습니다.
+
+- `Feat`: 사용자 기능 추가
+- `Fix`: 오류 수정
+- `Data`: 기본 데이터 변경
+- `Test`: 검증 코드나 실행 증거
+- `Docs`: 문서
+- `Chore`: 프로젝트 설정
+- `Merge`: 브랜치 통합
+
+## Git 확인
+
+공개 저장소: <https://github.com/ehdgus6697-debug/mission-1-2-quiz-game>
+
+커밋 수와 브랜치 병합 기록은 다음 명령으로 확인합니다.
+
+```bash
+git rev-list --count main
+git log --oneline --graph --all
+```
+
+`clone`과 `pull` 실습의 실제 수행 기록은 [`docs/evidence/clone-pull.md`](docs/evidence/clone-pull.md)에서 확인할 수 있습니다.
+
+## 클래스 요약
+
+- `Quiz`: 문제, 선택지, 정답을 보관하고 문제 출력과 정답 판정을 담당합니다.
+- `QuizGame`: 메뉴, 입력 검증, 게임 진행, 퀴즈 추가·목록, 점수, JSON 저장·불러오기를 관리합니다.
+
+`__init__`은 객체가 만들어질 때 필요한 속성을 준비합니다. `self`는 지금 사용 중인 객체 자신을 가리킵니다. 기능을 메서드로 나누었기 때문에 각 부분을 따로 읽고 테스트할 수 있습니다.
