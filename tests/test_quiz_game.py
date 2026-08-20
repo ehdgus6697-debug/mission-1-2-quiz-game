@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 import quiz_game
-from quiz_game import Quiz, QuizGame, create_default_quizzes
+from quiz_game import Quiz, QuizGame, create_default_quizzes, quiz_from_dict
 
 
 class QuizTests(unittest.TestCase):
@@ -15,7 +15,7 @@ class QuizTests(unittest.TestCase):
 
         self.assertTrue(quiz.is_correct(3))
         self.assertFalse(quiz.is_correct(1))
-        self.assertEqual(Quiz.from_dict(quiz.to_dict()), quiz)
+        self.assertEqual(quiz_from_dict(quiz.to_dict()).to_dict(), quiz.to_dict())
 
     def test_rejects_invalid_data(self):
         with self.assertRaises(ValueError):

@@ -21,21 +21,6 @@ class Quiz:
         self.choices = choices
         self.answer = answer
 
-    def __eq__(self, other):
-        if not isinstance(other, Quiz):
-            return NotImplemented
-        return (
-            self.question == other.question
-            and self.choices == other.choices
-            and self.answer == other.answer
-        )
-
-    def __repr__(self):
-        return (
-            f"Quiz(question={self.question!r}, "
-            f"choices={self.choices!r}, answer={self.answer!r})"
-        )
-
     def is_correct(self, choice):
         return choice == self.answer
 
@@ -52,14 +37,15 @@ class Quiz:
             "answer": self.answer,
         }
 
-    @classmethod
-    def from_dict(cls, data):
-        if not isinstance(data, dict):
-            raise ValueError("퀴즈 데이터는 객체여야 합니다.")
-        try:
-            return cls(data["question"], data["choices"], data["answer"])
-        except (KeyError, TypeError) as error:
-            raise ValueError("퀴즈 데이터 형식이 올바르지 않습니다.") from error
+
+def quiz_from_dict(data):
+    """딕셔너리(state.json에서 읽은 데이터)를 Quiz 객체로 만든다."""
+    if not isinstance(data, dict):
+        raise ValueError("퀴즈 데이터는 객체여야 합니다.")
+    try:
+        return Quiz(data["question"], data["choices"], data["answer"])
+    except (KeyError, TypeError) as error:
+        raise ValueError("퀴즈 데이터 형식이 올바르지 않습니다.") from error
 
 
 def create_default_quizzes():
@@ -137,7 +123,7 @@ class QuizGame:
             data = json.loads(self.state_path.read_text(encoding="utf-8"))
             if not isinstance(data, dict) or not isinstance(data["quizzes"], list):
                 raise ValueError("상태 데이터 형식이 올바르지 않습니다.")
-            self.quizzes = [Quiz.from_dict(item) for item in data["quizzes"]]
+            self.quizzes = [quiz_from_dict(item) for item in data["quizzes"]]
             self.best_score = data.get("best_score")
             self.best_correct = data.get("best_correct")
             self.best_total = data.get("best_total")
