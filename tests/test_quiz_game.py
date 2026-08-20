@@ -128,5 +128,22 @@ class PlayTests(unittest.TestCase):
             self.assertIn("등록된 퀴즈가 없습니다", output.getvalue())
 
 
+class AddQuizTests(unittest.TestCase):
+    def test_add_quiz_retries_empty_question_and_persists(self):
+        with TemporaryDirectory() as directory:
+            state_path = Path(directory) / "state.json"
+            game = QuizGame(state_path)
+            output = StringIO()
+            answers = ["", "새 문제", "선택 1", "선택 2", "선택 3", "선택 4", "2"]
+            with patch("builtins.input", side_effect=answers):
+                with redirect_stdout(output):
+                    game.add_quiz()
+
+            reloaded = QuizGame(state_path)
+            self.assertEqual(len(reloaded.quizzes), 6)
+            self.assertEqual(reloaded.quizzes[-1].question, "새 문제")
+            self.assertIn("퀴즈가 추가되었습니다", output.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()

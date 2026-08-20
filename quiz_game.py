@@ -149,6 +149,13 @@ class QuizGame:
                 continue
             return value
 
+    def read_non_empty(self, prompt: str) -> str:
+        while True:
+            value = input(prompt).strip()
+            if value:
+                return value
+            print("⚠️ 빈 값은 입력할 수 없습니다.")
+
     def show_menu(self) -> None:
         print("\n" + "=" * 40)
         print("        🎯 Python 기초 퀴즈 게임 🎯")
@@ -194,3 +201,15 @@ class QuizGame:
         if is_new_best:
             print("🎉 새로운 최고 점수입니다!")
         print("=" * 40)
+
+    def add_quiz(self) -> None:
+        print("\n📌 새로운 퀴즈를 추가합니다.")
+        question = self.read_non_empty("문제를 입력하세요: ")
+        choices = [
+            self.read_non_empty(f"선택지 {number}: ")
+            for number in range(1, 5)
+        ]
+        answer = self.read_number("정답 번호 (1-4): ", 1, 4)
+        self.quizzes.append(Quiz(question, choices, answer))
+        self.save_state()
+        print("✅ 퀴즈가 추가되었습니다!")
