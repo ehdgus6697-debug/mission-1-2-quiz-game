@@ -44,6 +44,18 @@ class PersistenceTests(unittest.TestCase):
             self.assertEqual(loaded.best_correct, 4)
             self.assertEqual(loaded.best_total, 5)
 
+    def test_corrupt_file_recovers_defaults(self):
+        with TemporaryDirectory() as directory:
+            state_path = Path(directory) / "state.json"
+            state_path.write_text("{broken", encoding="utf-8")
+
+            game = QuizGame(state_path)
+
+            self.assertEqual(len(game.quizzes), 5)
+            self.assertIsNone(game.best_score)
+            reloaded = QuizGame(state_path)
+            self.assertEqual(len(reloaded.quizzes), 5)
+
 
 if __name__ == "__main__":
     unittest.main()

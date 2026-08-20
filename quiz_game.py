@@ -114,8 +114,15 @@ class QuizGame:
             self.save_state()
             return
 
-        data = json.loads(self.state_path.read_text(encoding="utf-8"))
-        self.quizzes = [Quiz.from_dict(item) for item in data["quizzes"]]
-        self.best_score = data.get("best_score")
-        self.best_correct = data.get("best_correct")
-        self.best_total = data.get("best_total")
+        try:
+            data = json.loads(self.state_path.read_text(encoding="utf-8"))
+            if not isinstance(data, dict) or not isinstance(data["quizzes"], list):
+                raise ValueError("상태 데이터 형식이 올바르지 않습니다.")
+            self.quizzes = [Quiz.from_dict(item) for item in data["quizzes"]]
+            self.best_score = data.get("best_score")
+            self.best_correct = data.get("best_correct")
+            self.best_total = data.get("best_total")
+        except (json.JSONDecodeError, OSError, KeyError, TypeError, ValueError):
+            print("⚠️ 상태 파일을 읽을 수 없어 기본 데이터로 복구합니다.")
+            self._set_defaults()
+            self.save_state()
