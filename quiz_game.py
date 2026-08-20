@@ -7,7 +7,7 @@ from pathlib import Path
 class Quiz:
     """선택지가 네 개인 객관식 퀴즈 한 문제."""
 
-    def __init__(self, question: str, choices: list[str], answer: int) -> None:
+    def __init__(self, question, choices, answer):
         question = question.strip()
         choices = [str(choice).strip() for choice in choices]
         if not question:
@@ -21,7 +21,7 @@ class Quiz:
         self.choices = choices
         self.answer = answer
 
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other):
         if not isinstance(other, Quiz):
             return NotImplemented
         return (
@@ -30,22 +30,22 @@ class Quiz:
             and self.answer == other.answer
         )
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return (
             f"Quiz(question={self.question!r}, "
             f"choices={self.choices!r}, answer={self.answer!r})"
         )
 
-    def is_correct(self, choice: int) -> bool:
+    def is_correct(self, choice):
         return choice == self.answer
 
-    def display(self, index: int) -> None:
+    def display(self, index):
         print("\n" + "-" * 40)
         print(f"[문제 {index}] {self.question}")
         for choice_number, choice in enumerate(self.choices, start=1):
             print(f"{choice_number}. {choice}")
 
-    def to_dict(self) -> dict:
+    def to_dict(self):
         return {
             "question": self.question,
             "choices": self.choices,
@@ -53,7 +53,7 @@ class Quiz:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "Quiz":
+    def from_dict(cls, data):
         if not isinstance(data, dict):
             raise ValueError("퀴즈 데이터는 객체여야 합니다.")
         try:
@@ -62,7 +62,7 @@ class Quiz:
             raise ValueError("퀴즈 데이터 형식이 올바르지 않습니다.") from error
 
 
-def create_default_quizzes() -> list[Quiz]:
+def create_default_quizzes():
     """처음 실행할 때 사용할 Python 기초 퀴즈를 반환한다."""
     return [
         Quiz(
@@ -96,21 +96,21 @@ def create_default_quizzes() -> list[Quiz]:
 class QuizGame:
     """퀴즈 목록, 점수, 메뉴와 저장 흐름을 관리한다."""
 
-    def __init__(self, state_path: str | Path = "state.json") -> None:
+    def __init__(self, state_path="state.json"):
         self.state_path = Path(state_path)
-        self.quizzes: list[Quiz] = []
-        self.best_score: int | None = None
-        self.best_correct: int | None = None
-        self.best_total: int | None = None
+        self.quizzes = []
+        self.best_score = None
+        self.best_correct = None
+        self.best_total = None
         self.load_state()
 
-    def _set_defaults(self) -> None:
+    def _set_defaults(self):
         self.quizzes = create_default_quizzes()
         self.best_score = None
         self.best_correct = None
         self.best_total = None
 
-    def save_state(self) -> bool:
+    def save_state(self):
         data = {
             "quizzes": [quiz.to_dict() for quiz in self.quizzes],
             "best_score": self.best_score,
@@ -127,7 +127,7 @@ class QuizGame:
             return False
         return True
 
-    def load_state(self) -> None:
+    def load_state(self):
         if not self.state_path.exists():
             self._set_defaults()
             self.save_state()
@@ -146,7 +146,7 @@ class QuizGame:
             self._set_defaults()
             self.save_state()
 
-    def read_number(self, prompt: str, minimum: int, maximum: int) -> int:
+    def read_number(self, prompt, minimum, maximum):
         while True:
             raw_value = input(prompt).strip()
             if not raw_value:
@@ -162,14 +162,14 @@ class QuizGame:
                 continue
             return value
 
-    def read_non_empty(self, prompt: str) -> str:
+    def read_non_empty(self, prompt):
         while True:
             value = input(prompt).strip()
             if value:
                 return value
             print("⚠️ 빈 값은 입력할 수 없습니다.")
 
-    def show_menu(self) -> None:
+    def show_menu(self):
         print("\n" + "=" * 40)
         print("        🎯 Python 기초 퀴즈 게임 🎯")
         print("=" * 40)
@@ -180,7 +180,7 @@ class QuizGame:
         print("5. 종료")
         print("=" * 40)
 
-    def update_best_score(self, correct: int, total: int) -> bool:
+    def update_best_score(self, correct, total):
         score = round(correct / total * 100)
         if self.best_score is not None and score <= self.best_score:
             return False
@@ -190,7 +190,7 @@ class QuizGame:
         self.save_state()
         return True
 
-    def play_quizzes(self) -> None:
+    def play_quizzes(self):
         if not self.quizzes:
             print("📭 등록된 퀴즈가 없습니다.")
             return
@@ -215,7 +215,7 @@ class QuizGame:
             print("🎉 새로운 최고 점수입니다!")
         print("=" * 40)
 
-    def add_quiz(self) -> None:
+    def add_quiz(self):
         print("\n📌 새로운 퀴즈를 추가합니다.")
         question = self.read_non_empty("문제를 입력하세요: ")
         choices = [
@@ -227,7 +227,7 @@ class QuizGame:
         self.save_state()
         print("✅ 퀴즈가 추가되었습니다!")
 
-    def list_quizzes(self) -> None:
+    def list_quizzes(self):
         if not self.quizzes:
             print("📭 등록된 퀴즈가 없습니다.")
             return
@@ -238,7 +238,7 @@ class QuizGame:
             print(f"[{index}] {quiz.question}")
         print("-" * 40)
 
-    def show_best_score(self) -> None:
+    def show_best_score(self):
         if self.best_score is None:
             print("🏆 아직 퀴즈를 풀지 않았습니다.")
             return
@@ -247,7 +247,7 @@ class QuizGame:
             f"({self.best_total}문제 중 {self.best_correct}문제 정답)"
         )
 
-    def run(self) -> None:
+    def run(self):
         actions = {
             1: self.play_quizzes,
             2: self.add_quiz,
@@ -268,7 +268,7 @@ class QuizGame:
             self.save_state()
 
 
-def main() -> None:
+def main():
     state_path = Path(__file__).with_name("state.json")
     QuizGame(state_path).run()
 
