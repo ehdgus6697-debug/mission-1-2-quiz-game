@@ -27,7 +27,8 @@ git push origin main
 git pull origin main
 ```
 
-<!-- TODO: 실제 pull 실행 로그(Fast-forward 또는 Updating ...done 메시지)를 여기에 붙여넣는다. -->
+<img width="1384" height="994" alt="image" src="https://github.com/user-attachments/assets/44d62091-e354-472f-9c8f-30a6a9a730cf" />
+
 
 pull 이후 `mission-1-2-quiz-game-clone`의 `git log --oneline -1`이 작업 저장소의 최신 커밋과 같아진 것으로 반영을 확인했다.
 
