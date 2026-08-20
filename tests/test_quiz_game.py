@@ -85,5 +85,48 @@ class InputTests(unittest.TestCase):
             self.assertNotIn("힌트", text)
 
 
+class ScoreTests(unittest.TestCase):
+    def test_updates_only_when_score_is_higher(self):
+        with TemporaryDirectory() as directory:
+            game = QuizGame(Path(directory) / "state.json")
+
+            self.assertTrue(game.update_best_score(3, 5))
+            self.assertEqual((game.best_score, game.best_correct, game.best_total), (60, 3, 5))
+            self.assertTrue(game.update_best_score(4, 5))
+            self.assertFalse(game.update_best_score(4, 5))
+            self.assertFalse(game.update_best_score(2, 5))
+            self.assertEqual((game.best_score, game.best_correct, game.best_total), (80, 4, 5))
+
+
+class PlayTests(unittest.TestCase):
+    def test_play_reports_answers_and_result(self):
+        with TemporaryDirectory() as directory:
+            game = QuizGame(Path(directory) / "state.json")
+            game.quizzes = [
+                Quiz("첫 문제", ["정답", "오답", "오답", "오답"], 1),
+                Quiz("둘째 문제", ["정답", "오답", "오답", "오답"], 1),
+            ]
+            output = StringIO()
+            with patch("builtins.input", side_effect=["1", "2"]):
+                with redirect_stdout(output):
+                    game.play_quizzes()
+
+            text = output.getvalue()
+            self.assertIn("✅ 정답입니다!", text)
+            self.assertIn("❌ 오답입니다.", text)
+            self.assertIn("2문제 중 1문제 정답", text)
+            self.assertIn("50점", text)
+
+    def test_play_handles_empty_quiz_list(self):
+        with TemporaryDirectory() as directory:
+            game = QuizGame(Path(directory) / "state.json")
+            game.quizzes = []
+            output = StringIO()
+            with redirect_stdout(output):
+                game.play_quizzes()
+
+            self.assertIn("등록된 퀴즈가 없습니다", output.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()
