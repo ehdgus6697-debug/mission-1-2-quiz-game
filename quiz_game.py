@@ -153,3 +153,13 @@ class QuizGame:
         print("4. 점수 확인")
         print("5. 종료")
         print("=" * 40)
+
+    def update_best_score(self, correct: int, total: int) -> bool:
+        score = round(correct / total * 100)
+        if self.best_score is not None and score <= self.best_score:
+            return False
+        self.best_score = score
+        self.best_correct = correct
+        self.best_total = total
+        self.save_state()
+        return True

@@ -85,5 +85,18 @@ class InputTests(unittest.TestCase):
             self.assertNotIn("힌트", text)
 
 
+class ScoreTests(unittest.TestCase):
+    def test_updates_only_when_score_is_higher(self):
+        with TemporaryDirectory() as directory:
+            game = QuizGame(Path(directory) / "state.json")
+
+            self.assertTrue(game.update_best_score(3, 5))
+            self.assertEqual((game.best_score, game.best_correct, game.best_total), (60, 3, 5))
+            self.assertTrue(game.update_best_score(4, 5))
+            self.assertFalse(game.update_best_score(4, 5))
+            self.assertFalse(game.update_best_score(2, 5))
+            self.assertEqual((game.best_score, game.best_correct, game.best_total), (80, 4, 5))
+
+
 if __name__ == "__main__":
     unittest.main()
