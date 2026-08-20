@@ -233,3 +233,32 @@ class QuizGame:
             f"🏆 최고 점수: {self.best_score}점 "
             f"({self.best_total}문제 중 {self.best_correct}문제 정답)"
         )
+
+    def run(self) -> None:
+        actions = {
+            1: self.play_quizzes,
+            2: self.add_quiz,
+            3: self.list_quizzes,
+            4: self.show_best_score,
+        }
+        try:
+            while True:
+                self.show_menu()
+                choice = self.read_number("선택: ", 1, 5)
+                if choice == 5:
+                    print("👋 현재 상태를 저장하고 안전하게 종료합니다.")
+                    return
+                actions[choice]()
+        except (KeyboardInterrupt, EOFError):
+            print("\n⚠️ 입력이 중단되었습니다. 현재 상태를 저장하고 종료합니다.")
+        finally:
+            self.save_state()
+
+
+def main() -> None:
+    state_path = Path(__file__).with_name("state.json")
+    QuizGame(state_path).run()
+
+
+if __name__ == "__main__":
+    main()

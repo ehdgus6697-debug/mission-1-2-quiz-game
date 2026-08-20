@@ -5,6 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
+import quiz_game
 from quiz_game import Quiz, QuizGame, create_default_quizzes
 
 
@@ -189,6 +190,36 @@ class ShowScoreTests(unittest.TestCase):
             text = output.getvalue()
             self.assertIn("80점", text)
             self.assertIn("5문제 중 4문제", text)
+
+
+class RunTests(unittest.TestCase):
+    def test_menu_choice_five_exits_normally(self):
+        with TemporaryDirectory() as directory:
+            game = QuizGame(Path(directory) / "state.json")
+            output = StringIO()
+            with patch("builtins.input", return_value="5"):
+                with redirect_stdout(output):
+                    game.run()
+
+            self.assertIn("안전하게 종료합니다", output.getvalue())
+
+    def test_input_interruptions_exit_safely(self):
+        for interruption in (KeyboardInterrupt(), EOFError()):
+            with self.subTest(interruption=type(interruption).__name__):
+                with TemporaryDirectory() as directory:
+                    game = QuizGame(Path(directory) / "state.json")
+                    output = StringIO()
+                    with patch("builtins.input", side_effect=interruption):
+                        with redirect_stdout(output):
+                            game.run()
+
+                    self.assertIn("입력이 중단되었습니다", output.getvalue())
+
+    def test_main_starts_game(self):
+        with patch("quiz_game.QuizGame") as game_class:
+            quiz_game.main()
+
+        game_class.return_value.run.assert_called_once_with()
 
 
 if __name__ == "__main__":
