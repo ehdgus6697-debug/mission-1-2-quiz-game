@@ -1,6 +1,8 @@
 # Python 기초 퀴즈 게임
 
-터미널에서 실행하는 객관식 퀴즈 게임입니다. 퀴즈를 풀고, 새로운 문제를 추가하고, 목록과 최고 점수를 확인할 수 있습니다. 프로그램을 종료해도 `state.json`에 퀴즈와 최고 점수가 남습니다.
+## 프로젝트 개요
+
+터미널에서 실행하는 객관식 퀴즈 게임입니다. 퀴즈를 풀고, 새로운 문제를 추가하고, 목록과 최고 점수를 확인할 수 있습니다. 프로그램을 종료해도 `state.json`에 퀴즈와 최고 점수가 남습니다. `Quiz`, `QuizGame` 두 클래스로 역할을 나누고 입력 검증·예외 처리를 갖춰, Python 기초 문법·파일 입출력·Git 협업 흐름을 함께 연습하기 위한 미션 결과물입니다.
 
 ## 퀴즈 주제와 선정 이유
 
@@ -38,10 +40,17 @@ mission-1-2-quiz-game/
 │   └── test_quiz_game.py # 표준 라이브러리 unittest 테스트
 ├── docs/
 │   ├── evidence/         # 실행 및 Git 검증 기록
+│   ├── screenshots/      # 실행 화면 캡처
 │   └── superpowers/      # 설계와 구현 계획
 ├── .gitignore
 └── README.md
 ```
+
+## 실행 화면
+
+| 메뉴 | 퀴즈 풀기 | 퀴즈 추가 | 점수 확인 |
+|---|---|---|---|
+| ![메뉴](docs/screenshots/menu.png) | ![퀴즈 풀기](docs/screenshots/play.png) | ![퀴즈 추가](docs/screenshots/add_quiz.png) | ![점수 확인](docs/screenshots/score.png) |
 
 ## 데이터 파일
 
@@ -156,5 +165,3 @@ git log --oneline --graph --all
 - `QuizGame`: 메뉴, 입력 검증, 게임 진행, 퀴즈 추가·목록, 점수, JSON 저장·불러오기를 관리합니다.
 
 `__init__`은 객체가 만들어질 때 필요한 속성을 준비합니다. `self`는 지금 사용 중인 객체 자신을 가리킵니다. 기능을 메서드로 나누었기 때문에 각 부분을 따로 읽고 테스트할 수 있습니다.
-
-clone/pull 실습 확인용 기록: 2026-08-20 18:31
