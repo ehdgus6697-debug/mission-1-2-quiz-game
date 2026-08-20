@@ -39,3 +39,34 @@ class Quiz:
             return cls(data["question"], data["choices"], data["answer"])
         except (KeyError, TypeError) as error:
             raise ValueError("퀴즈 데이터 형식이 올바르지 않습니다.") from error
+
+
+def create_default_quizzes() -> list[Quiz]:
+    """처음 실행할 때 사용할 Python 기초 퀴즈를 반환한다."""
+    return [
+        Quiz(
+            "Python에서 값을 저장할 때 사용하는 이름은 무엇인가요?",
+            ["변수", "반복문", "조건문", "주석"],
+            1,
+        ),
+        Quiz(
+            "여러 값을 순서대로 저장하는 자료형은 무엇인가요?",
+            ["bool", "int", "list", "str"],
+            3,
+        ),
+        Quiz(
+            "조건에 따라 다른 코드를 실행할 때 사용하는 문법은 무엇인가요?",
+            ["import", "if", "def", "class"],
+            2,
+        ),
+        Quiz(
+            "정해진 횟수만큼 반복할 때 주로 사용하는 문법은 무엇인가요?",
+            ["try", "return", "for", "with"],
+            3,
+        ),
+        Quiz(
+            "함수를 정의할 때 사용하는 키워드는 무엇인가요?",
+            ["def", "while", "elif", "print"],
+            1,
+        ),
+    ]

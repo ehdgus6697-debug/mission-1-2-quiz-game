@@ -1,6 +1,6 @@
 import unittest
 
-from quiz_game import Quiz
+from quiz_game import Quiz, create_default_quizzes
 
 
 class QuizTests(unittest.TestCase):
@@ -14,6 +14,15 @@ class QuizTests(unittest.TestCase):
     def test_rejects_invalid_data(self):
         with self.assertRaises(ValueError):
             Quiz("문제", ["1", "2"], 1)
+
+
+class DefaultQuizTests(unittest.TestCase):
+    def test_default_quizzes_have_required_shape(self):
+        quizzes = create_default_quizzes()
+
+        self.assertGreaterEqual(len(quizzes), 5)
+        self.assertTrue(all(len(quiz.choices) == 4 for quiz in quizzes))
+        self.assertTrue(all(1 <= quiz.answer <= 4 for quiz in quizzes))
 
 
 if __name__ == "__main__":
