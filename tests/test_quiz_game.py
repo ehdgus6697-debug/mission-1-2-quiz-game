@@ -145,6 +145,30 @@ class AddQuizTests(unittest.TestCase):
             self.assertEqual(reloaded.quizzes[-1].question, "새 문제")
             self.assertIn("퀴즈가 추가되었습니다", output.getvalue())
 
+    def test_add_quiz_retries_empty_choice_and_invalid_answers(self):
+        with TemporaryDirectory() as directory:
+            game = QuizGame(Path(directory) / "state.json")
+            output = StringIO()
+            answers = [
+                "새 문제",
+                "",
+                "선택 1",
+                "선택 2",
+                "선택 3",
+                "선택 4",
+                "abc",
+                "0",
+                "5",
+                "2",
+            ]
+            with patch("builtins.input", side_effect=answers):
+                with redirect_stdout(output):
+                    game.add_quiz()
+
+            self.assertEqual(game.quizzes[-1].choices[0], "선택 1")
+            self.assertEqual(game.quizzes[-1].answer, 2)
+            self.assertEqual(output.getvalue().count("⚠️"), 4)
+
 
 class ListQuizTests(unittest.TestCase):
     def test_lists_numbered_questions(self):
