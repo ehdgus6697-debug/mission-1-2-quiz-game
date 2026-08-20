@@ -145,5 +145,28 @@ class AddQuizTests(unittest.TestCase):
             self.assertIn("퀴즈가 추가되었습니다", output.getvalue())
 
 
+class ListQuizTests(unittest.TestCase):
+    def test_lists_numbered_questions(self):
+        with TemporaryDirectory() as directory:
+            game = QuizGame(Path(directory) / "state.json")
+            output = StringIO()
+            with redirect_stdout(output):
+                game.list_quizzes()
+
+            text = output.getvalue()
+            self.assertIn("등록된 퀴즈 목록 (총 5개)", text)
+            self.assertIn("[1] Python에서 값을 저장", text)
+
+    def test_list_handles_empty_quiz_list(self):
+        with TemporaryDirectory() as directory:
+            game = QuizGame(Path(directory) / "state.json")
+            game.quizzes = []
+            output = StringIO()
+            with redirect_stdout(output):
+                game.list_quizzes()
+
+            self.assertIn("등록된 퀴즈가 없습니다", output.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()
