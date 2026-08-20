@@ -6,13 +6,16 @@
 
 ```bash
 $ git rev-list --count main
-28
+31
 ```
 
 ## 병합 기록 포함 전체 로그
 
 ```bash
 $ git log --oneline --graph --all
+* 2e93155 Refactor: Quiz와 QuizGame 클래스를 quiz.py, quiz_game.py 두 파일로 분리
+* 4f49b6e Style: classmethod와 던더 메서드를 일반 함수로 단순화
+* da5284a Docs: 평가 피드백 반영 (커밋/병합 증거, JSON 선정 이유, 확장성·백업 전략 보완)
 * c6c78e7 Style: 타입 힌트 제거, 순수 Python 기초 문법으로 정리
 * 7951195 Refactor: Quiz 클래스를 dataclass 없이 __init__으로 재작성
 * b5d6cd5 Docs: 프로젝트 개요, 실행 화면 스크린샷, clone/pull 증거 정리

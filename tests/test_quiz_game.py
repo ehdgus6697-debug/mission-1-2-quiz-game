@@ -6,7 +6,8 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 import quiz_game
-from quiz_game import Quiz, QuizGame, create_default_quizzes, quiz_from_dict
+from quiz import Quiz, create_default_quizzes, quiz_from_dict
+from quiz_game import QuizGame
 
 
 class QuizTests(unittest.TestCase):

@@ -34,14 +34,15 @@ python3 quiz_game.py
 
 ```text
 mission-1-2-quiz-game/
-├── quiz_game.py          # Quiz, QuizGame 클래스와 실행 진입점
-├── state.json            # 퀴즈 목록과 최고 점수
+├── quiz.py                # Quiz 클래스, quiz_from_dict, create_default_quizzes
+├── quiz_game.py           # QuizGame 클래스와 실행 진입점(main)
+├── state.json             # 퀴즈 목록과 최고 점수
 ├── tests/
-│   └── test_quiz_game.py # 표준 라이브러리 unittest 테스트
+│   └── test_quiz_game.py  # 표준 라이브러리 unittest 테스트
 ├── docs/
-│   ├── evidence/         # 실행 및 Git 검증 기록
-│   ├── screenshots/      # 실행 화면 캡처
-│   └── superpowers/      # 설계와 구현 계획
+│   ├── evidence/          # 실행 및 Git 검증 기록
+│   ├── screenshots/       # 실행 화면 캡처
+│   └── superpowers/       # 설계와 구현 계획
 ├── .gitignore
 └── README.md
 ```
@@ -84,7 +85,7 @@ mission-1-2-quiz-game/
 
 ```bash
 python3 -m unittest discover -s tests -v
-python3 -m py_compile quiz_game.py
+python3 -m py_compile quiz.py quiz_game.py
 python3 -m json.tool state.json
 ```
 
@@ -92,9 +93,11 @@ python3 -m json.tool state.json
 
 ### 클래스로 나눈 이유
 
-`Quiz`는 문제 하나의 데이터(`question`, `choices`, `answer`)와 판정 동작(`display`, `is_correct`, `to_dict`, `from_dict`)을 담당합니다. `QuizGame`은 여러 퀴즈와 최고 점수를 관리하며 메뉴, 입력 검증, 게임 진행, 퀴즈 추가·목록, 파일 저장·불러오기를 담당합니다.
+`Quiz`는 문제 하나의 데이터(`question`, `choices`, `answer`)와 판정 동작(`display`, `is_correct`, `to_dict`)을 담당합니다. `QuizGame`은 여러 퀴즈와 최고 점수를 관리하며 메뉴, 입력 검증, 게임 진행, 퀴즈 추가·목록, 파일 저장·불러오기를 담당합니다.
 
 함수만으로도 구현할 수 있지만 그러면 퀴즈 목록과 최고 점수를 여러 함수에 계속 인자로 넘겨야 합니다. 클래스로 묶으면 객체가 자기 상태를 직접 들고 있어서 메서드 사이 데이터 전달이 단순해지고, 문제 하나의 규칙(`Quiz`)과 프로그램 전체 흐름(`QuizGame`)이라는 두 책임이 분명하게 나뉩니다.
+
+두 클래스는 책임이 다른 만큼 파일도 나눴습니다. `quiz.py`는 퀴즈 데이터 자체(`Quiz`, `quiz_from_dict`, `create_default_quizzes`)만 다루고, `quiz_game.py`는 `quiz.py`를 가져와 사용하면서 메뉴·저장·실행 흐름을 담당합니다. 한 파일이 너무 길어지지 않고, "퀴즈 하나가 뭔지"와 "게임을 어떻게 진행하는지"를 각각 다른 파일에서 읽을 수 있습니다.
 
 ### 메서드 구성
 
@@ -114,7 +117,7 @@ python3 -m json.tool state.json
 시작할 때
 main → QuizGame 생성 → __init__ → load_state
      ├─ 파일 없음        → _set_defaults → save_state
-     ├─ 정상 파일        → json.loads → Quiz.from_dict → 객체 목록 복원
+     ├─ 정상 파일        → json.loads → quiz_from_dict → 객체 목록 복원
      └─ 손상/읽기 실패    → 예외 처리  → _set_defaults → save_state
 
 실행 중 / 종료할 때
@@ -163,13 +166,13 @@ git rev-list --count main
 git log --oneline --graph --all
 ```
 
-실제 실행 결과(커밋 28개, 병합 커밋 3곳 포함 전체 로그)는 [`docs/evidence/git-log.md`](docs/evidence/git-log.md)에서 확인할 수 있습니다.
+실제 실행 결과(전체 로그, 병합 커밋 3곳 포함)는 [`docs/evidence/git-log.md`](docs/evidence/git-log.md)에서 확인할 수 있습니다.
 
 `clone`과 `pull` 실습의 실제 수행 기록은 [`docs/evidence/clone-pull.md`](docs/evidence/clone-pull.md)에서 확인할 수 있습니다.
 
 ## 클래스 요약
 
-- `Quiz`: 문제, 선택지, 정답을 보관하고 문제 출력과 정답 판정을 담당합니다.
-- `QuizGame`: 메뉴, 입력 검증, 게임 진행, 퀴즈 추가·목록, 점수, JSON 저장·불러오기를 관리합니다.
+- `Quiz` (`quiz.py`): 문제, 선택지, 정답을 보관하고 문제 출력과 정답 판정을 담당합니다.
+- `QuizGame` (`quiz_game.py`): 메뉴, 입력 검증, 게임 진행, 퀴즈 추가·목록, 점수, JSON 저장·불러오기를 관리합니다.
 
 `__init__`은 객체가 만들어질 때 필요한 속성을 준비합니다. `self`는 지금 사용 중인 객체 자신을 가리킵니다. 기능을 메서드로 나누었기 때문에 각 부분을 따로 읽고 테스트할 수 있습니다.
