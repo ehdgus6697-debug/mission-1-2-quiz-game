@@ -168,5 +168,28 @@ class ListQuizTests(unittest.TestCase):
             self.assertIn("등록된 퀴즈가 없습니다", output.getvalue())
 
 
+class ShowScoreTests(unittest.TestCase):
+    def test_shows_message_before_first_game(self):
+        with TemporaryDirectory() as directory:
+            game = QuizGame(Path(directory) / "state.json")
+            output = StringIO()
+            with redirect_stdout(output):
+                game.show_best_score()
+
+            self.assertIn("아직 퀴즈를 풀지 않았습니다", output.getvalue())
+
+    def test_shows_saved_best_score(self):
+        with TemporaryDirectory() as directory:
+            game = QuizGame(Path(directory) / "state.json")
+            game.best_score, game.best_correct, game.best_total = 80, 4, 5
+            output = StringIO()
+            with redirect_stdout(output):
+                game.show_best_score()
+
+            text = output.getvalue()
+            self.assertIn("80점", text)
+            self.assertIn("5문제 중 4문제", text)
+
+
 if __name__ == "__main__":
     unittest.main()
