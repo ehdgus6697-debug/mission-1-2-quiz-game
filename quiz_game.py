@@ -1,27 +1,40 @@
 """Python 기초 퀴즈 게임."""
 
 import json
-from dataclasses import dataclass
 from pathlib import Path
 
 
-@dataclass
 class Quiz:
     """선택지가 네 개인 객관식 퀴즈 한 문제."""
 
-    question: str
-    choices: list[str]
-    answer: int
-
-    def __post_init__(self) -> None:
-        self.question = self.question.strip()
-        self.choices = [str(choice).strip() for choice in self.choices]
-        if not self.question:
+    def __init__(self, question: str, choices: list[str], answer: int) -> None:
+        question = question.strip()
+        choices = [str(choice).strip() for choice in choices]
+        if not question:
             raise ValueError("문제는 비어 있을 수 없습니다.")
-        if len(self.choices) != 4 or any(not choice for choice in self.choices):
+        if len(choices) != 4 or any(not choice for choice in choices):
             raise ValueError("선택지는 비어 있지 않은 4개여야 합니다.")
-        if not isinstance(self.answer, int) or not 1 <= self.answer <= 4:
+        if not isinstance(answer, int) or not 1 <= answer <= 4:
             raise ValueError("정답은 1부터 4 사이의 정수여야 합니다.")
+
+        self.question = question
+        self.choices = choices
+        self.answer = answer
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Quiz):
+            return NotImplemented
+        return (
+            self.question == other.question
+            and self.choices == other.choices
+            and self.answer == other.answer
+        )
+
+    def __repr__(self) -> str:
+        return (
+            f"Quiz(question={self.question!r}, "
+            f"choices={self.choices!r}, answer={self.answer!r})"
+        )
 
     def is_correct(self, choice: int) -> bool:
         return choice == self.answer
